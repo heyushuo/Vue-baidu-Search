@@ -1,0 +1,163 @@
+<!DOCTYPE html>
+<html>
+	<head>
+		<meta charset="utf-8" />
+		<title></title>
+		<style type="text/css">
+			*{margin: 0;padding: 0;}
+			.box{
+				width: 100%;
+				height: 100%;
+				font-family: "微软雅黑";
+			}
+			.log{
+				text-align: center;
+				margin-top: 80px;
+			}
+			.log img{
+				width: 270px;
+				height: 129px;
+			}
+			.search{
+				text-align: center;
+				position: relative;
+				width: 554px;
+				margin: 0 auto;
+				
+			}
+			.search input[type='text']{
+				position: absolute;
+				left: 0;
+				right: 0;
+				margin: 0 auto;
+				width: 510px;
+				padding: 11px 40px 10px 5px;
+			}
+			.pic{
+				position: absolute;
+				background: url(img/pic.png) no-repeat;
+				display: inline-block;
+				height: 16px;
+    			width: 18px;
+    			right: 10px;
+    			top: 12px;
+    			cursor: pointer;
+			}
+			.btnsearch{
+				width: 100px;
+				height: 40px;
+				position: absolute;
+				right: -105px;
+				top: 0;
+				text-align: center;
+				line-height: 40px;
+				color: #fff;
+				background: #3388FF;
+				border: none;
+				cursor: pointer;
+			}
+			.pic:hover{
+				background: url(img/pic.png) no-repeat 0 -20px;
+			}
+			.list{
+				position: absolute;
+				top: 39px;
+				left: 0;
+				text-align: left;
+				text-indent: 1em;
+				border: 1px solid #CCCCCC;
+				list-style: none;
+				width: 558px;
+			}
+			.list li{
+				padding: 5px 0px;
+			}
+			.grayActive{
+				background: #F0F0F0;
+			}
+			.list li:hover{
+				background: #F0F0F0;
+				cursor: pointer;
+			}
+			[v-cloak] {
+			  display: none;
+			}
+		</style>
+	</head>
+	<body>
+		<div class="box" id="app">
+			<div class="log">
+				<img src="img/baidu.png"/>
+			</div>
+			<div class="search">
+				<input type="text" v-model='keyval' @keyup="get($event)" @keydown.up="changeUp()" @keydown.down="changeDown()" @keyup.enter="get($event)" />
+				<span class="pic"></span>
+				<input type="button" name=""  id="btn" class="btnsearch" value="百度一下" @click="getClick($event)" />
+				<ul class="list" v-show="myData.length!=0">
+					<li v-for="(item,index) in myData" :class="{grayActive:index==nowIndex}" @click="search($event)" v-cloak>
+						{{item}}
+					</li>
+				</ul>
+			</div>
+		</div>
+	</body>
+</html>
+<script src="js/vue.js" type="text/javascript" charset="utf-8"></script>
+<script src="js/vue-resource.js" type="text/javascript" charset="utf-8"></script>
+<script type="text/javascript">
+	var vm=new Vue({
+		el:"#app",
+		data:{
+			myData:[],
+			keyval:'',
+			nowIndex:-1
+		},
+		methods:{
+			//点击百度一下
+			getClick(){
+				window.open("https://www.baidu.com/s?wd="+this.keyval);
+			},
+			//kedown和keyup事件
+			get(ev){
+				//阻止按上下键时请求后台
+				if(ev.keyCode==38||ev.keyCode==40)return;
+				if(ev.keyCode==13){
+					window.open("https://www.baidu.com/s?wd="+this.keyval);
+				}
+				
+				this.$http.jsonp('https://sp0.baidu.com/5a1Fazu8AA54nxGko9WTAnF6hhy/su',{
+                        wd:this.keyval
+                    },{
+                        jsonp:'cb'
+                    }).then(function(res){
+                        this.myData=res.data.s;
+                    },function(){
+                         alert("error")   
+                });
+			},
+			//上下键
+			changeDown(){
+				this.nowIndex+=1;
+				this.keyval=this.myData[this.nowIndex];
+				if(this.nowIndex==this.myData.length){
+					this.nowIndex=0;
+				}
+				this.keyval=this.myData[this.nowIndex]
+			},
+			changeUp(){
+				if(this.nowIndex==0){
+					this.nowIndex=this.myData.length;
+				}
+				this.nowIndex--;
+				this.keyval=this.myData[this.nowIndex]
+			},
+			//点击时获取
+			search(ev){
+				//点击时获取当前节点
+				var el=ev.currentTarget;
+				var innerVal=el.innerHTML;
+				window.open("https://www.baidu.com/s?wd="+innerVal)
+			}
+		},
+	})
+</script>
